@@ -2,7 +2,8 @@ import argparse
 import numpy as np
 from collections import Counter
 import sys
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 
 def sum_differences(left_l, right_l) -> int:
@@ -38,6 +39,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     right_l = data[:, 1]
     print(f"Part 1: {sum_differences(left_l, right_l)}")
     print(f"Part 2: {similarity(left_l, right_l)}")
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
