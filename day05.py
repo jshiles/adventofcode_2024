@@ -15,6 +15,37 @@ def validate(print_run: list[int], rules: dict[int, list[int]]) -> bool:
     return True
 
 
+def insert_before(run: list[int], x: int, before: int) -> list[int]:
+    """We insert all x's prior to 'before' and return the modified list"""
+    y_index = run.index(before)
+    x_values = [num for i, num in enumerate(run) if num == x and i > y_index]
+    others = [num for i, num in enumerate(run) if num != x or i < y_index]
+    new_y_index = others.index(before)
+    result = others[:new_y_index] + x_values + others[new_y_index:]
+    return result
+
+
+def validate_and_fix(print_run: list[int], rules: dict[int, list[int]]) -> list[int]:
+    """
+    If the solution is not valid, we will recrusively shift the violations
+    until we reach a valid print_run and then return that.
+    """
+    if validate(print_run, rules):
+        return print_run
+
+    inncorrect_run = print_run
+    already_printed: dict = {}
+    for page in inncorrect_run:
+        violations = [x for x in rules.get(page, []) if already_printed.get(x, 0)]
+        if len(violations):
+            return validate_and_fix(
+                insert_before(inncorrect_run, page, violations[0]), rules
+            )
+        already_printed[page] = 1
+
+    return inncorrect_run
+
+
 def find_middle_num(print_run: list[int]) -> int:
     """Return the middle number of the array as an int"""
     middle_index = len(print_run) // 2
@@ -59,8 +90,16 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     """
     args = parse_args(argv)
     rules, print_order = parse_input(args.file)
-    total = sum([find_middle_num(print_run) for print_run in print_order if validate(print_run, rules)])
+    total = sum([find_middle_num(pr) for pr in print_order if validate(pr, rules)])
     print(f"Part 1: {total}")
+    total = sum(
+        [
+            find_middle_num(validate_and_fix(pr, rules))
+            for pr in print_order
+            if not validate(pr, rules)
+        ]
+    )
+    print(f"Part 2: {total}")
 
 
 if __name__ == "__main__":
