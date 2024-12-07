@@ -86,7 +86,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 
 def main(argv: Optional[Sequence[str]] = None) -> None:
     """
-    https://adventofcode.com/2024/day/4
+    https://adventofcode.com/2024/day/5
     """
     args = parse_args(argv)
     rules, print_order = parse_input(args.file)
