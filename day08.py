@@ -19,17 +19,32 @@ class Antenna:
     frequency: str
 
 
-def find_antinodes(locations: list[Antenna], max_x: int, max_y: int) -> set[Point]:
+def find_antinodes(
+    locations: list[Antenna], max_x: int, max_y: int, resonnance: bool = False
+) -> set[Point]:
     """
     Find all antinodes locations, according the definition from list of Antenna locs.
     Return locations as a set[Point]
     """
+
     def compute_antinode(l1: Antenna, l2: Antenna) -> None:
         if l1.frequency == l2.frequency:
             newx = l2.point.x + (l2.point.x - l1.point.x)
             newy = l2.point.y + (l2.point.y - l1.point.y)
-            if newx >= 0 and newx < max_x and newy >= 0 and newy < max_y:
-                antinode_locations.add(Point(newx,newy))
+            count = 0
+            while (
+                newx >= 0
+                and newx < max_x
+                and newy >= 0
+                and newy < max_y
+                and (resonnance or count == 0)
+            ):
+                antinode_locations.add(Point(newx, newy))
+                newx = newx + (l2.point.x - l1.point.x)
+                newy = newy + (l2.point.y - l1.point.y)
+                count += 1
+            if resonnance:
+                antinode_locations.add(l2.point)
 
     antinode_locations = set()
     for loc1, loc2 in combinations(locations, 2):
@@ -43,14 +58,14 @@ def process_input(file_path: str) -> tuple[list[Antenna], int, int]:
     """Returns the list of Antennas and max cols and rows"""
     locations = []
     max_length = 0  # To track the maximum line length
-    num_rows = 0    # To count the number of rows
+    num_rows = 0  # To count the number of rows
 
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         for y, line in enumerate(file):  # y is the row index
             stripped_line = line.strip()
             max_length = max(max_length, len(stripped_line))  # Update max_length
             for x, char in enumerate(stripped_line):  # x is the column index
-                if char != '.':  # Skip '.' characters
+                if char != ".":  # Skip '.' characters
                     locations.append(Antenna(Point(x=x, y=y), frequency=char))
             num_rows += 1  # Increment row count
 
@@ -72,6 +87,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
 
     num_antinodes = len(find_antinodes(locations, max_x, max_y))
     print(f"Part 1: {num_antinodes}")
+
+    num_antinodes = len(find_antinodes(locations, max_x, max_y, True))
+    print(f"Part 2: {num_antinodes}")
 
 
 if __name__ == "__main__":
