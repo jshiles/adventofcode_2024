@@ -52,6 +52,40 @@ def find_path(grid: list[list[int]], sp: Location, ep: Location) -> list[Locatio
     return []
 
 
+def count_trails_from_x(grid: list[list[int]], sp: Location) -> int:
+    """
+    Depth first search of the grid to find the number of unique trails
+    This starting point will yield. Returns that as a count.
+    """
+
+    def dfs(row, col, visited):
+        # If we reach a cell with 9, count this as one valid path
+        if grid[row][col] == 9:
+            return 1
+
+        # Mark current cell as visited
+        visited.add((row, col))
+
+        # Explore neighbors
+        paths = 0
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = row + dr, col + dc
+            if (
+                0 <= nr < rows
+                and 0 <= nc < cols
+                and (nr, nc) not in visited
+                and (grid[nr][nc] - grid[row][col]) == 1
+            ):
+                paths += dfs(nr, nc, visited)
+
+        # Backtrack
+        visited.remove((row, col))
+        return paths
+
+    rows, cols = len(grid), len(grid[0])
+    return dfs(sp.row, sp.col, set())
+
+
 def parse_input(path: str) -> list[list[int]]:
     nested_list = []
     with open(path, "r") as file:
@@ -93,6 +127,11 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             if len(find_path(topological_map, sp, ep)) > 0:
                 count += 1
     print(f"Part 1: {count}")
+
+    count = 0
+    for sp in starting_points:
+        count += count_trails_from_x(topological_map, sp)
+    print(f"Part 2: {count}")
 
 
 if __name__ == "__main__":
